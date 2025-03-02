@@ -5,6 +5,7 @@ import time
 from playsound import playsound
 import sys
 import argparse
+import requests
 import glob
 
 import os
@@ -180,9 +181,11 @@ def main():
 
             if(phoneInView):
                 phoneConfirmed(phonelessTime)
+                requests.post("http://localhost:5000/phone_detected", json={"phone_detected": True})
                 print("Current state -- phone in view")
             else:
                 phoneLeftScreen()
+                requests.post("http://localhost:5000/phone_detected", json={"phone_detected": False})
                 print("Current state -- no phone")
             nowCounting=False
 
