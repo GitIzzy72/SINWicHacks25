@@ -6,20 +6,23 @@ import time
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-def current_milli_time():
-    return round(time.time() * 1000)
 
 def main(): 
     targetObject = "cell phone"
     minConfidence = .85
-    innocenceLimit = 5 # amount of frames before an sighting is terminate
+    phoneFoundRatio = .6
 
-    firstSighting = 0 # time when phone sighting first began 
-    suspicion = False # when true it means that there was a phone sighting recently
+    timerStart = time.time()
+    timeInQuestion = time.time() #The last time we are certain they weren't on their phone
+    storedTime = 0 
 
-    phoneDissapeared = 0 
-    innocenceTrial = False
-    notAFalseAlarm = 1
+    nowCounting = False # when true, increment totalFound
+    totalFound = 0 #number of frames a phone has been counted
+    framesPassed = 0
+    denominatorFrames = 20
+
+    phoneInView=False
+
 
     video = cv2.VideoCapture(0)
 
@@ -29,35 +32,58 @@ def main():
         #conf -- confidence
         # label -- what it detects it as
         # bbox -- collection of 4 points?
+
         output_image = draw_bbox(frame, bbox, label, conf, write_conf=True)
-
         cv2.imshow("Object Detetion", output_image)
+        
+        # cv2.imshow("Object Detetion", frame)
 
-        #check if it sees cellphone
-        #check cellphones confidence metric
-        #check if the program believes this is a continuous viewing of the phone --suspicion
-        #is the distance from beginning of suspicion more than 
+        currentFramePhonePresent = (targetObject in label) #true when phone is in screen on this frame
 
+        if(nowCounting):
+            framesPassed+=1
+            print(str(framesPassed)+", phone present: "+str(currentFramePhonePresent))
 
-        if ((targetObject in label)):
-            if(suspicion and ((time.time()-firstSighting)>innocenceLimit)):
+            if(currentFramePhonePresent):
+                totalFound+=1
+
+        # phone presence in this frame does not match state and counting isn't happening
+        if( not (currentFramePhonePresent==phoneInView or nowCounting) ):
+            #if you're testing for phone leaving set the potential start time to when this process begins
+            storedTime = time.time()
+            framesPassed = 0
+            totalFound = 0
+            nowCounting=True
+
+        if(framesPassed==denominatorFrames): 
+            print("interval reached")
+            print("Toal found "+str(totalFound))
+            print("Ratio: "+str(totalFound/denominatorFrames))
+
+            #phoneFound is true if the ratio of found frames is above the threshold
+            countPhoneFound = (totalFound/denominatorFrames)>=phoneFoundRatio
+            framesPassed = 0
+            totalFound = 0
+
+            if(countPhoneFound and not phoneInView): 
+                #stop timer and save timec
+                  phonelessTime = storedTime - timerStart
+
+            if(not countPhoneFound and phoneInView):
+                #new start time is where this began the count
+                timerStart = storedTime
+
+            phoneInView = countPhoneFound
+
+            if(phoneInView):
                 phoneConfirmed()
+                print("Current state -- phone in view")
+            else:
+                print("Current state -- no phone")
+            nowCounting=False
 
-            if(not suspicion):
-                suspicion=True
-                firstSighting = time.time()
-        else:
-            if(suspicion):
-                innocenceTrial = True
-                phoneDissapeared = time.time()
             
-            if(innocenceTrial and (time.time()-phoneDissapeared)>notAFalseAlarm):
-                suspicion=False
-                print("Phone gone")
-            
-
-
-
+        
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
