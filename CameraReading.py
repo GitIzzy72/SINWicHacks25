@@ -120,13 +120,16 @@ def main():
         #         # Basic example: count the number of objects in the image
         #         object_count = object_count + 1
         '''
-        
+        text = ""
+
         if len(detections) > 0:
             label = targetObject
+            text = "Phone Detected!"
         else:
             label = ""
+            text = "No Phones Detected"
 
-        # cv2.putText(frame, f'FPS: {avg_frame_rate:0.2f}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2) # Draw framerate
+        cv2.putText(frame, text, (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2)
         
         
         cv2.imshow("Object Detetion", frame)
