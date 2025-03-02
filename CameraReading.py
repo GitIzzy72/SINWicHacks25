@@ -33,7 +33,7 @@ totalPhoneDistractions = 0
 targetObject = "cell phone"
 minConfidence = .45
 phoneFoundRatio = .6
-soundPath = 'SINWicHacks25/sounds/AgressiveIshAlarm.mp3'
+soundPath = './sounds/AgressiveIshAlarm.mp3'
 
 
 
@@ -184,8 +184,8 @@ def main():
             
         
         if cv2.waitKey(1) & 0xFF == ord("q"):
-            print("Your longest time without a phone was "+longestTime+" seconds")
-            print("You picked up your phone "+totalPhoneDistractions+" times")
+            print("Your longest time without a phone was "+str(longestTime)+" seconds")
+            print("You picked up your phone "+str(totalPhoneDistractions)+" times")
             break
 
     cv2.destroyAllWindows()
@@ -194,12 +194,13 @@ def phoneLeftScreen():
     print("You put your phone down!")
 
 def phoneConfirmed(timeOff):
-    playsound()
+    global soundPath
+    playsound(soundPath)
     global totalPhoneDistractions
     global totalPhoneDistractions
     totalPhoneDistractions +=1
     print("You're on your phone!")
-    print("You were off your phone for "+timeOff+" seconds")
+    print("You were off your phone for "+str(timeOff)+" seconds")
 
 def getLongestTime():
     global longestTime
