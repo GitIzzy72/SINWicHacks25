@@ -2,6 +2,7 @@ import cv2
 import cvlib as cv
 from cvlib.object_detection import draw_bbox
 import time
+from playsound import playsound
 
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -29,6 +30,8 @@ def main():
     global targetObject
     global minConfidence
     global phoneFoundRatio
+    global longestTime
+    global totalPhoneDistractions
 
     timerStart = time.time()
     timeInQuestion = time.time() #The last time we are certain they weren't on their phone
@@ -86,6 +89,7 @@ def main():
             countPhoneFound = (totalFound/denominatorFrames)>=phoneFoundRatio
             framesPassed = 0
             totalFound = 0
+            phonelessTime = 0
 
             if(countPhoneFound and not phoneInView): 
                 #stop timer and save timec
@@ -99,23 +103,30 @@ def main():
             phoneInView = countPhoneFound
 
             if(phoneInView):
-                phoneConfirmed()
+                phoneConfirmed(phonelessTime)
                 print("Current state -- phone in view")
             else:
+                phoneLeftScreen()
                 print("Current state -- no phone")
             nowCounting=False
 
             
         
         if cv2.waitKey(1) & 0xFF == ord("q"):
+            print("Your longest time without a phone was "+longestTime+" seconds")
+            print("You picked up your phone "+totalPhoneDistractions+" times")
             break
 
     cv2.destroyAllWindows()
 
+def phoneLeftScreen():
+    print("You put your phone down!")
 
-def phoneConfirmed():
+def phoneConfirmed(timeOff):
+    global totalPhoneDistractions
     totalPhoneDistractions +=1
-    print("Goober!!")
+    print("You're on your phone!")
+    print("You were off your phone for "+timeOff+" seconds")
 
 def getLongestTime():
     global longestTime
