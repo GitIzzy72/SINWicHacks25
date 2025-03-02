@@ -1,10 +1,27 @@
 import cv2
-import cvlib as cv
-from cvlib.object_detection import draw_bbox
+# import cvlib as cv
+# from cvlib.object_detection import draw_bbox
 import time
+import sys
+import argparse
+import glob
 
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import numpy as np
+from ultralytics import YOLO
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--model', help='Path to YOLO model file (example: "runs/detect/train/weights/best.pt")',
+                    required=True)
+
+args = parser.parse_args()
+model_path = args.model
+
+# Load the model into memory and get labemap
+model = YOLO(model_path, task='detect')
+labels = model.names
 
 # to do: 
 # fix global variable bull shit
@@ -46,13 +63,63 @@ def main():
 
     while True:
         ret, frame = video.read()
-        bbox, label, conf = cv.detect_common_objects(frame)
+
+
+        # Run inference on frame
+        results = model(frame, verbose=False)
+
+        # Extract results
+        detections = results[0].boxes
+
+        # Initialize variable for basic object counting example
+        object_count = 0
+
+        # bbox, label, conf = cv.detect_common_objects(frame)
         #conf -- confidence
         # label -- what it detects it as
         # bbox -- collection of 4 points?
 
-        output_image = draw_bbox(frame, bbox, label, conf, write_conf=True)
-        cv2.imshow("Object Detetion", output_image)
+        # output_image = draw_bbox(frame, bbox, label, conf, write_conf=True)
+        
+        
+        
+         # Go through each detection and get bbox coords, confidence, and class
+        for i in range(len(detections)):
+
+            # Get bounding box coordinates
+            # Ultralytics returns results in Tensor format, which have to be converted to a regular Python array
+            xyxy_tensor = detections[i].xyxy.cpu() # Detections in Tensor format in CPU memory
+            xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
+            xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
+
+            # Get bounding box class ID and name
+            classidx = int(detections[i].cls.item())
+            classname = labels[classidx]
+
+            # Get bounding box confidence
+            conf = detections[i].conf.item()
+
+            # Draw box if confidence threshold is high enough
+            if conf > 0.5:
+
+                color = bbox_colors[classidx % 10]
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), color, 2)
+
+                label = f'{classname}: {int(conf*100)}%'
+                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1) # Get font size
+                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), color, cv2.FILLED) # Draw white box to put label text in
+                cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1) # Draw label text
+
+                # Basic example: count the number of objects in the image
+                object_count = object_count + 1
+
+        
+        
+        # cv2.putText(frame, f'FPS: {avg_frame_rate:0.2f}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2) # Draw framerate
+        
+        
+        cv2.imshow("Object Detetion", frame)
         
         # cv2.imshow("Object Detetion", frame)
 
