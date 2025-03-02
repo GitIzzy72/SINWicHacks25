@@ -33,6 +33,7 @@ totalPhoneDistractions = 0
 targetObject = "cell phone"
 minConfidence = .45
 phoneFoundRatio = .6
+soundPath = 'SINWicHacks25/sounds/AgressiveIshAlarm.mp3'
 
 
 
@@ -52,7 +53,6 @@ def main():
     global totalPhoneDistractions
 
     timerStart = time.time()
-    timeInQuestion = time.time() #The last time we are certain they weren't on their phone
     storedTime = 0 
 
     nowCounting = False # when true, increment totalFound
@@ -78,6 +78,7 @@ def main():
         # Initialize variable for basic object counting example
         object_count = 0
 
+        '''
         # bbox, label, conf = cv.detect_common_objects(frame)
         #conf -- confidence
         # label -- what it detects it as
@@ -117,20 +118,17 @@ def main():
 
         #         # Basic example: count the number of objects in the image
         #         object_count = object_count + 1
+        '''
         
         if len(detections) > 0:
             label = targetObject
         else:
             label = ""
 
-        
-        
         # cv2.putText(frame, f'FPS: {avg_frame_rate:0.2f}', (10,20), cv2.FONT_HERSHEY_SIMPLEX, .7, (0,255,255), 2) # Draw framerate
         
         
         cv2.imshow("Object Detetion", frame)
-        
-        # cv2.imshow("Object Detetion", frame)
 
         currentFramePhonePresent = (targetObject in label) #true when phone is in screen on this frame
         confidence = 0
@@ -196,6 +194,7 @@ def phoneLeftScreen():
     print("You put your phone down!")
 
 def phoneConfirmed(timeOff):
+    playsound()
     global totalPhoneDistractions
     global totalPhoneDistractions
     totalPhoneDistractions +=1
