@@ -2,6 +2,7 @@ import cv2
 # import cvlib as cv
 # from cvlib.object_detection import draw_bbox
 import time
+from playsound import playsound
 import sys
 import argparse
 import glob
@@ -32,6 +33,7 @@ totalPhoneDistractions = 0
 targetObject = "cell phone"
 minConfidence = .45
 phoneFoundRatio = .6
+soundPath = './sounds/AgressiveIshAlarm.mp3'
 
 
 
@@ -47,9 +49,10 @@ def main():
     global minConfidence
     global phoneFoundRatio
     global totalPhoneDistractions
+    global longestTime
+    global totalPhoneDistractions
 
     timerStart = time.time()
-    timeInQuestion = time.time() #The last time we are certain they weren't on their phone
     storedTime = 0 
 
     nowCounting = False # when true, increment totalFound
@@ -75,6 +78,7 @@ def main():
         # Initialize variable for basic object counting example
         object_count = 0
 
+        '''
         # bbox, label, conf = cv.detect_common_objects(frame)
         #conf -- confidence
         # label -- what it detects it as
@@ -114,7 +118,9 @@ def main():
 
         #         # Basic example: count the number of objects in the image
         #         object_count = object_count + 1
+        '''
         text = ""
+
         if len(detections) > 0:
             label = targetObject
             text = "Phone Detected!"
@@ -126,8 +132,6 @@ def main():
         
         
         cv2.imshow("Object Detetion", frame)
-        
-        # cv2.imshow("Object Detetion", frame)
 
         currentFramePhonePresent = (targetObject in label) #true when phone is in screen on this frame
         confidence = 0
@@ -159,6 +163,7 @@ def main():
             countPhoneFound = (totalFound/denominatorFrames)>=phoneFoundRatio
             framesPassed = 0
             totalFound = 0
+            phonelessTime = 0
 
             if(countPhoneFound and not phoneInView): 
                 #stop timer and save timec
@@ -172,24 +177,33 @@ def main():
             phoneInView = countPhoneFound
 
             if(phoneInView):
-                phoneConfirmed()
+                phoneConfirmed(phonelessTime)
                 print("Current state -- phone in view")
             else:
+                phoneLeftScreen()
                 print("Current state -- no phone")
             nowCounting=False
 
             
         
         if cv2.waitKey(1) & 0xFF == ord("q"):
+            print("Your longest time without a phone was "+str(longestTime)+" seconds")
+            print("You picked up your phone "+str(totalPhoneDistractions)+" times")
             break
 
     cv2.destroyAllWindows()
 
+def phoneLeftScreen():
+    print("You put your phone down!")
 
-def phoneConfirmed():
+def phoneConfirmed(timeOff):
+    global soundPath
+    playsound(soundPath)
+    global totalPhoneDistractions
     global totalPhoneDistractions
     totalPhoneDistractions +=1
-    print("Goober!!")
+    print("You're on your phone!")
+    print("You were off your phone for "+str(timeOff)+" seconds")
 
 def getLongestTime():
     global longestTime
