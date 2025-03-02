@@ -10,18 +10,25 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 # fix global variable bull shit
 # patch it up to flask
 
-global longestTime
 longestTime = 0
+totalPhoneDistractions = 0
+targetObject = "cell phone"
+minConfidence = .45
+phoneFoundRatio = .6
+
+
 
 def newMaxTime(time):
+    global longestTime
+
     if(time>longestTime):
         longestTime=time
         print("new longest time "+str(longestTime))
 
 def main(): 
-    targetObject = "cell phone"
-    minConfidence = .45
-    phoneFoundRatio = .6
+    global targetObject
+    global minConfidence
+    global phoneFoundRatio
 
     timerStart = time.time()
     timeInQuestion = time.time() #The last time we are certain they weren't on their phone
@@ -107,6 +114,15 @@ def main():
 
 
 def phoneConfirmed():
+    totalPhoneDistractions +=1
     print("Goober!!")
+
+def getLongestTime():
+    global longestTime
+    return longestTime
+
+def getTotalPickups():
+    global totalPhoneDistractions
+    return totalPhoneDistractions
 
 main()
