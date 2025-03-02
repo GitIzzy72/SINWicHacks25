@@ -46,6 +46,7 @@ def main():
     global targetObject
     global minConfidence
     global phoneFoundRatio
+    global totalPhoneDistractions
 
     timerStart = time.time()
     timeInQuestion = time.time() #The last time we are certain they weren't on their phone
@@ -84,35 +85,40 @@ def main():
         
         
          # Go through each detection and get bbox coords, confidence, and class
-        for i in range(len(detections)):
+        # for i in range(len(detections)):
 
-            # Get bounding box coordinates
-            # Ultralytics returns results in Tensor format, which have to be converted to a regular Python array
-            xyxy_tensor = detections[i].xyxy.cpu() # Detections in Tensor format in CPU memory
-            xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
-            xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
+        #     # Get bounding box coordinates
+        #     # Ultralytics returns results in Tensor format, which have to be converted to a regular Python array
+        #     xyxy_tensor = detections[i].xyxy.cpu() # Detections in Tensor format in CPU memory
+        #     xyxy = xyxy_tensor.numpy().squeeze() # Convert tensors to Numpy array
+        #     xmin, ymin, xmax, ymax = xyxy.astype(int) # Extract individual coordinates and convert to int
 
-            # Get bounding box class ID and name
-            classidx = int(detections[i].cls.item())
-            classname = labels[classidx]
+        #     # Get bounding box class ID and name
+        #     classidx = int(detections[i].cls.item())
+        #     classname = labels[classidx]
 
-            # Get bounding box confidence
-            conf = detections[i].conf.item()
+        #     # Get bounding box confidence
+        #     conf = detections[i].conf.item()
 
-            # Draw box if confidence threshold is high enough
-            if conf > 0.5:
+        #     # Draw box if confidence threshold is high enough
+        #     if conf > 0.5:
 
-                color = bbox_colors[classidx % 10]
-                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), color, 2)
+        #         color = bbox_colors[classidx % 10]
+        #         cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), color, 2)
 
-                label = f'{classname}: {int(conf*100)}%'
-                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1) # Get font size
-                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), color, cv2.FILLED) # Draw white box to put label text in
-                cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1) # Draw label text
+        #         label = f'{classname}: {int(conf*100)}%'
+        #         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1) # Get font size
+        #         label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+        #         cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), color, cv2.FILLED) # Draw white box to put label text in
+        #         cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1) # Draw label text
 
-                # Basic example: count the number of objects in the image
-                object_count = object_count + 1
+        #         # Basic example: count the number of objects in the image
+        #         object_count = object_count + 1
+        
+        if len(detections) > 0:
+            label = targetObject
+        else:
+            label = ""
 
         
         
@@ -125,16 +131,16 @@ def main():
 
         currentFramePhonePresent = (targetObject in label) #true when phone is in screen on this frame
         confidence = 0
-        if(currentFramePhonePresent):
-            confidence=conf[label.index(targetObject)]
+        # if(currentFramePhonePresent):
+        #     confidence=conf[label.index(targetObject)]
 
         if(nowCounting):
             framesPassed+=1
             print(str(framesPassed)+", phone present: "+str(currentFramePhonePresent))
 
             if(currentFramePhonePresent):
-                if(confidence>minConfidence):
-                    totalFound+=1
+            #     if(confidence>minConfidence):
+                totalFound+=1
 
         # phone presence in this frame does not match state and counting isn't happening
         if( not (currentFramePhonePresent==phoneInView or nowCounting) ):
@@ -181,6 +187,7 @@ def main():
 
 
 def phoneConfirmed():
+    global totalPhoneDistractions
     totalPhoneDistractions +=1
     print("Goober!!")
 
