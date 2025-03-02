@@ -32,8 +32,9 @@ longestTime = 0
 totalPhoneDistractions = 0
 targetObject = "cell phone"
 minConfidence = .45
-phoneFoundRatio = .6
 soundPath = './sounds/AgressiveIshAlarm.mp3'
+denominatorFrames = 20
+phoneFoundRatio = .6
 
 
 
@@ -51,6 +52,7 @@ def main():
     global totalPhoneDistractions
     global longestTime
     global totalPhoneDistractions
+    global denominatorFrames
 
     timerStart = time.time()
     storedTime = 0 
@@ -58,7 +60,6 @@ def main():
     nowCounting = False # when true, increment totalFound
     totalFound = 0 #number of frames a phone has been counted
     framesPassed = 0
-    denominatorFrames = 20
 
     phoneInView=False
 
@@ -137,7 +138,7 @@ def main():
 
         if(nowCounting):
             framesPassed+=1
-            print(str(framesPassed)+", phone present: "+str(currentFramePhonePresent))
+            # print(str(framesPassed)+", phone present: "+str(currentFramePhonePresent))
 
             if(currentFramePhonePresent):
             #     if(confidence>minConfidence):
@@ -146,6 +147,7 @@ def main():
         # phone presence in this frame does not match state and counting isn't happening
         if( not (currentFramePhonePresent==phoneInView or nowCounting) ):
             #if you're testing for phone leaving set the potential start time to when this process begins
+            print("investigating")
             storedTime = time.time()
             framesPassed = 0
             totalFound = 0
