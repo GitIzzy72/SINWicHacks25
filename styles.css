@@ -1,0 +1,24 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+.container {
+    display: flex;
+    align-items: center;
+    margin: 0 auto;
+    border: 10px solid black;
+}
+
+.header {
+    text-align: center;
+    margin: 0 auto;
+    background-color: rgb(166, 179, 202);
+
+}
+#webcam {
+    width: 500px;
+    height: 400px;
+    background-color: dimgray;
+    transform: scale(-1, 1);
+}
+
