@@ -5,6 +5,7 @@
         <title>SINWicHacks25</title>
         <!--<link rel="icon" type="image/svg+xml" href="images/favicon.svg">-->
         <link rel="stylesheet" href="styles.css">
+        <link rel="script" href="script.js">
     </head>
     <body>
         <div class="header">
@@ -12,15 +13,21 @@
         </div>
         <div class="container">
             <div class="buttons">
-                <button id="startButton" onclick="startButton()">Start</button>
-                <button id="stopButton" onclick="stopButton()">Stop</button>
+                <button id="startButton" onclick="document.getElementById('webcam').play()">►</button>
+                <button id="stopButton" onclick="document.getElementById('webcam').pause()">⏸︎</button>
+                <button id="alert" onclick="playAlert()">Alert</button>
+                <button id="startSession">Start Session</button>
+                <button id="stopSession">Stop Session</button>
             </div>
-            <video id="webcam" autoplay="" ></video>
+            <video id="webcam" autoplay="true" >
+                <script src="webcam.js"></script>
+            </video>
+            <audio style="display: none;" id="notification" preload src="alert-sound-87478.mp3"></audio>
         </div>
 
-        <script>
-            video();
-        </script>
+        <script src="script.js"></script>
+
+        
     </body>
     <footer>
         

@@ -1,24 +1,8 @@
-video(){
-    let video = document.querySelector("#webcam");
-    if (navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function (stream) {
-
-                video.srcObject = stream;
-            })
-            .catch(function (err0) {
-                console.log("Something went wrong!");
-            });
-    }
-    else {
-        console.log("getUserMedia() is not supported in your browser");
-    }
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-startButton(){
-    
-}
-
-stopButton(){
-
+  
+function playAlert() {
+    document.getElementById('notification').play()
+    window.alert("sometext");
 }
