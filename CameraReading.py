@@ -6,10 +6,21 @@ import time
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
+# to do: 
+# fix global variable bull shit
+# patch it up to flask
+
+global longestTime
+longestTime = 0
+
+def newMaxTime(time):
+    if(time>longestTime):
+        longestTime=time
+        print("new longest time "+str(longestTime))
 
 def main(): 
     targetObject = "cell phone"
-    minConfidence = .85
+    minConfidence = .45
     phoneFoundRatio = .6
 
     timerStart = time.time()
@@ -39,13 +50,17 @@ def main():
         # cv2.imshow("Object Detetion", frame)
 
         currentFramePhonePresent = (targetObject in label) #true when phone is in screen on this frame
+        confidence = 0
+        if(currentFramePhonePresent):
+            confidence=conf[label.index(targetObject)]
 
         if(nowCounting):
             framesPassed+=1
             print(str(framesPassed)+", phone present: "+str(currentFramePhonePresent))
 
             if(currentFramePhonePresent):
-                totalFound+=1
+                if(confidence>minConfidence):
+                    totalFound+=1
 
         # phone presence in this frame does not match state and counting isn't happening
         if( not (currentFramePhonePresent==phoneInView or nowCounting) ):
@@ -67,7 +82,8 @@ def main():
 
             if(countPhoneFound and not phoneInView): 
                 #stop timer and save timec
-                  phonelessTime = storedTime - timerStart
+                phonelessTime = storedTime - timerStart
+                newMaxTime(phonelessTime)
 
             if(not countPhoneFound and phoneInView):
                 #new start time is where this began the count
@@ -88,6 +104,7 @@ def main():
             break
 
     cv2.destroyAllWindows()
+
 
 def phoneConfirmed():
     print("Goober!!")
